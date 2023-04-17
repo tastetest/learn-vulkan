@@ -1,5 +1,5 @@
 use learn_vulkan::run;
 
 fn main() {
-    run();
+    pollster::block_on(run());
 }

@@ -58,12 +58,34 @@ fn main() -> Result<()> {
 }
 
 unsafe fn create_instance(window: &Window, entry: &Entry) -> Result<Instance> {
+    const VALIDATION_ENABLED: bool = cfg!(debug_assertions);
+
+    const VALIDATION_LAYER: vk::ExtensionName =
+        vk::ExtensionName::from_bytes(b"VK_LAYER_KHRONOS_validation");
+
+   
     let application_info = vk::ApplicationInfo::builder()
         .application_name(b"Vulkan Tutorial\0")
         .application_version(vk::make_version(1, 0, 0))
         .engine_name(b"No Engine\0")
         .engine_version(vk::make_version(1, 0, 0))
         .api_version(vk::make_version(1, 0, 0));
+
+     let available_layers = entry
+        .enumerate_instance_layer_properties()?
+        .iter()
+        .map(|l| l.layer_name)
+        .collect::<HashSet<_>>();
+
+    if VALIDATION_ENABLED && !available_layers.contains(&VALIDATION_LAYER) {
+        return Err(anyhow!("validation layer was requested but not supported."));
+    }
+
+    let layers = if VALIDATION_ENABLED {
+        vec![VALIDATION_LAYER.as_ptr()]
+    } else {
+        Vec::new()
+    };
 
     let extensions = vk_window::get_required_instance_extensions(window)
         .iter()
@@ -72,7 +94,9 @@ unsafe fn create_instance(window: &Window, entry: &Entry) -> Result<Instance> {
 
     let info = vk::InstanceCreateInfo::builder()
         .application_info(&application_info)
-        .enabled_extension_names(&extensions);
+        .enabled_layer_names(&layers)
+        .enabled_extension_names(&extensions)
+        .flags(flags);
 
     Ok(entry.create_instance(&info, None)?)
 }

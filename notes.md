@@ -1,4 +1,4 @@
-## There are three things that happen with vulkan:
+## There are a couple of things that happen with vulkan:
 
 1. Instance and physical device selection.
 This chooses what GPU you're using, creates a vkInstance which exposes what API's you're going to call, you can query for your PhysicalDevice's, or properties like VRAM size, or your device capabilities.
